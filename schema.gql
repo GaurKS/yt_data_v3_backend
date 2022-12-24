@@ -1,0 +1,15 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type VideoDto {
+  video_title: String!
+  query: String!
+  description: String!
+  publishedAt: String!
+  thumbnail: String!
+}
+
+type Query {
+  getVideos: [VideoDto!]!
+}

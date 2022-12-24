@@ -1,11 +1,11 @@
-import { InputType } from '@nestjs/graphql';
 import {
   Field,
-  ObjectType
-} from 'type-graphql';
+  ObjectType,
+  InputType
+} from '@nestjs/graphql';
 
 @ObjectType()
-export class CreatePokemonDto {
+export class VideoDto {
     @Field() 
     readonly video_title: string
 

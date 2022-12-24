@@ -6,6 +6,7 @@ import Axios from 'axios';
 import { VideoI } from './models/video.interface';
 import { Cron } from '@nestjs/schedule/dist/decorators';
 import { CronExpression } from '@nestjs/schedule/dist/enums';
+import { VideoDto } from './models/video.dto';
 
 @Injectable()
 export class VideoService {
@@ -109,7 +110,7 @@ export class VideoService {
     }
   }
 
-  async getVideos() {
+  async getVideos(): Promise<Array<VideoEntity>> {
     return await this.videoRepository.find()
   }
 
