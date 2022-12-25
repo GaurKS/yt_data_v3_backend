@@ -20,20 +20,21 @@ export class VideoService {
     let lastPublishedAt;
     try{
       lastPublishedAt = await this.videoRepository
-                                              .createQueryBuilder('video')
-                                              .select('video.publishedAt')
-                                              .orderBy({
-                                                "video.publishedAt": "DESC"
-                                              })
-                                              .getOne();
+                                .createQueryBuilder('video')
+                                .select('video.publishedAt')
+                                .orderBy({
+                                  "video.publishedAt": "DESC"
+                                })
+                                .getOne();
       console.log("last published at: ", lastPublishedAt.publishedAt);
       return lastPublishedAt.publishedAt;
     } catch (err) {
       console.log("Error: ", err);
-      return {
-        statusCode: 400,
-        error: err
-      };
+      // return {
+      //   statusCode: 400,
+      //   error: err
+      // };
+      return null;
     }
   }
 
@@ -45,56 +46,108 @@ export class VideoService {
     lastPublishedAt = newTime.toISOString();
     console.log("lastTime produced: ", lastPublishedAt);
 
-    const response = await Axios.get(
-      `https://www.googleapis.com/youtube/v3/search`,
-      {
-        params: {
-          key: 'AIzaSyA2qczuK9rk22XO51UcZYa78LiWt-y6hWk',
-          q: searchQuery,
-          part: 'snippet',
-          type: 'video',
-          order: 'date',
-          maxResults: 10,
-          publishedAfter: '2022-09-23T01:59:53Z' 
+    if ( lastPublishedAt === null ){
+      const response = await Axios.get(
+        `https://www.googleapis.com/youtube/v3/search`,
+        {
+          params: {
+            key: process.env.API_KEY,
+            q: searchQuery,
+            part: 'snippet',
+            type: 'video',
+            order: 'date',
+            maxResults: 10,
+            publishedAfter: '2022-09-23T01:59:53Z' 
+          }
         }
-      }
-    );
-
-    const data: Array<VideoI> = [];
-    response.data.items.forEach(async (element)=> {
-      try {
-        const obj = {
-          query: searchQuery,
-          video_title: element.snippet.title,
-          description: element.snippet.description,
-          publishedAt: element.snippet.publishedAt,
-          thumbnail: element.snippet.thumbnails.default.url,
+      );
+  
+      const data: Array<VideoI> = [];
+      response.data.items.forEach(async (element)=> {
+        try {
+          const obj = {
+            query: searchQuery,
+            video_title: element.snippet.title,
+            description: element.snippet.description,
+            publishedAt: element.snippet.publishedAt,
+            thumbnail: element.snippet.thumbnails.default.url,
+          }
+          data.push(obj); 
+          const newVideo = this.videoRepository.create({
+            query: searchQuery,
+            video_title: element.snippet.title,
+            description: element.snippet.description,
+            publishedAt: element.snippet.publishedAt,
+            thumbnail: element.snippet.thumbnails.default.url
+          })
+          await newVideo.save();
+          return {
+            statusCode: 201,
+            message: "Added Successfully",
+            data: data
+          };
+  
+        } catch (error) {
+          console.log("Error while adding video to db: ", error);
+          return {
+            statusCode: 401,
+            message: "Error Occurred",
+            data: error
+          };
         }
-        data.push(obj); 
-        const newVideo = this.videoRepository.create({
-          query: searchQuery,
-          video_title: element.snippet.title,
-          description: element.snippet.description,
-          publishedAt: element.snippet.publishedAt,
-          thumbnail: element.snippet.thumbnails.default.url
-        })
-        await newVideo.save();
-        return {
-          statusCode: 201,
-          message: "Added Successfully",
-          data: data
-        };
-
-      } catch (error) {
-        console.log("Error while adding video to db: ", error);
-        return {
-          statusCode: 401,
-          message: "Error Occurred",
-          data: error
-        };
-      }
-    });
-
+      });
+    }
+    else {
+      const response = await Axios.get(
+        `https://www.googleapis.com/youtube/v3/search`,
+        {
+          params: {
+            key: process.env.API_KEY,
+            q: searchQuery,
+            part: 'snippet',
+            type: 'video',
+            order: 'date',
+            maxResults: 10,
+            publishedAfter: lastPublishedAt || '2022-09-23T01:59:53Z' 
+          }
+        }
+      );
+  
+      const data: Array<VideoI> = [];
+      response.data.items.forEach(async (element)=> {
+        try {
+          const obj = {
+            query: searchQuery,
+            video_title: element.snippet.title,
+            description: element.snippet.description,
+            publishedAt: element.snippet.publishedAt,
+            thumbnail: element.snippet.thumbnails.default.url,
+          }
+          data.push(obj); 
+          const newVideo = this.videoRepository.create({
+            query: searchQuery,
+            video_title: element.snippet.title,
+            description: element.snippet.description,
+            publishedAt: element.snippet.publishedAt,
+            thumbnail: element.snippet.thumbnails.default.url
+          })
+          await newVideo.save();
+          return {
+            statusCode: 201,
+            message: "Added Successfully",
+            data: data
+          };
+  
+        } catch (error) {
+          console.log("Error while adding video to db: ", error);
+          return {
+            statusCode: 401,
+            message: "Error Occurred",
+            data: error
+          };
+        }
+      });
+    }
   }
 
 
@@ -122,14 +175,14 @@ export class VideoService {
 
   async searchByTitle(searchTerm: string){
     const data = await this.videoRepository
-                                .createQueryBuilder('video')
-                                .where('video.video_title ILIKE :searchTerm', {
-                                  searchTerm: `%${searchTerm}%`
-                                })
-                                .orderBy({
-                                  "video.publishedAt": "DESC"
-                                })
-                                .getMany();
+                          .createQueryBuilder('video')
+                          .where('video.video_title ILIKE :searchTerm', {
+                            searchTerm: `%${searchTerm}%`
+                          })
+                          .orderBy({
+                            "video.publishedAt": "DESC"
+                          })
+                          .getMany();
     return data;
   }
 }
