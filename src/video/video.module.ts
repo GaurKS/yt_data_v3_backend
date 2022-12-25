@@ -14,7 +14,7 @@ import { ApolloDriver } from '@nestjs/apollo/dist/drivers';
     TypeOrmModule.forFeature([
       VideoEntity
     ]),
-    // ScheduleModule.forRoot(),
+    ScheduleModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql'

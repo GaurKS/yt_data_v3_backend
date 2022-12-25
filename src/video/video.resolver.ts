@@ -1,7 +1,6 @@
 import { 
   Resolver, 
   Query, 
-  Mutation, 
   Args 
 } from '@nestjs/graphql'
 import { VideoEntity } from './models/video.entity';
@@ -14,7 +13,17 @@ export class VideoResolver {
   constructor (private readonly videoService: VideoService){}
 
   @Query(() => [VideoDto])
-  async getVideos() {
-    return this.videoService.getVideos()
+  async getVideos(
+    @Args('offset') offset: number, 
+    @Args('limit') limit: number
+  ) {
+    return this.videoService.getVideos(offset, limit)
+  }
+
+  @Query(() => [VideoDto])
+  async search(
+    @Args('searchTerm') searchTerm: string,
+  ){
+    return this.videoService.searchByTitle(searchTerm);
   }
 }

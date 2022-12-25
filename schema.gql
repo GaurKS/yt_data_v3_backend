@@ -11,5 +11,6 @@ type VideoDto {
 }
 
 type Query {
-  getVideos: [VideoDto!]!
+  getVideos(offset: Float!, limit: Float!): [VideoDto!]!
+  search(searchTerm: String!): [VideoDto!]!
 }

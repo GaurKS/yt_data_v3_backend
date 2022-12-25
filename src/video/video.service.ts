@@ -6,7 +6,6 @@ import Axios from 'axios';
 import { VideoI } from './models/video.interface';
 import { Cron } from '@nestjs/schedule/dist/decorators';
 import { CronExpression } from '@nestjs/schedule/dist/enums';
-import { VideoDto } from './models/video.dto';
 
 @Injectable()
 export class VideoService {
@@ -110,8 +109,27 @@ export class VideoService {
     }
   }
 
-  async getVideos(): Promise<Array<VideoEntity>> {
-    return await this.videoRepository.find()
+  async getVideos(offset: number, limit: number): Promise<Array<VideoEntity>> {
+    return await this.videoRepository.find({
+      order: {
+        publishedAt: "DESC"
+      },
+      take: offset,
+      skip: limit
+    })
+
   }
 
+  async searchByTitle(searchTerm: string){
+    const data = await this.videoRepository
+                                .createQueryBuilder('video')
+                                .where('video.video_title ILIKE :searchTerm', {
+                                  searchTerm: `%${searchTerm}%`
+                                })
+                                .orderBy({
+                                  "video.publishedAt": "DESC"
+                                })
+                                .getMany();
+    return data;
+  }
 }

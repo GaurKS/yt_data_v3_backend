@@ -1,8 +1,11 @@
 import {
   Field,
   ObjectType,
-  InputType
+  InputType,
+  ArgsType
 } from '@nestjs/graphql';
+import { Int } from 'type-graphql';
+import { MinKey } from 'typeorm';
 
 @ObjectType()
 export class VideoDto {
@@ -39,3 +42,13 @@ export class inputVideo {
     @Field()
     readonly thumbnail: string
 }
+
+// @ArgsType()
+// export class responseArgs {
+//   @Field(()=> Int)
+//   skip = 0
+
+//   @Field(() => Int)
+//   take = 25
+
+// }
